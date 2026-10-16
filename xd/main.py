@@ -7,7 +7,7 @@ import os
 
 app = FastAPI()
 
-CARPETA_SUBIDAS = "subidas"
+CARPETA_SUBIDAS = "/tmp/subidas" if os.getenv("VERCEL") else "subidas"
 os.makedirs(CARPETA_SUBIDAS, exist_ok=True)
 
 app.mount("/archivos_cargados", StaticFiles(directory=CARPETA_SUBIDAS), name="archivos_cargados")
