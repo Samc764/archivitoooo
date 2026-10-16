@@ -7,19 +7,21 @@ import os
 
 app = FastAPI()
 
-CARPETA_SUBIDAS = "/tmp/subidas" if os.getenv("VERCEL") else "subidas"
+DIRECTORIO_APP = os.path.dirname(os.path.abspath(__file__))
+CARPETA_SUBIDAS = os.path.join("/tmp" if os.getenv("VERCEL") else DIRECTORIO_APP, "subidas")
 os.makedirs(CARPETA_SUBIDAS, exist_ok=True)
 
 app.mount("/archivos_cargados", StaticFiles(directory=CARPETA_SUBIDAS), name="archivos_cargados")
-plantillas = Jinja2Templates(directory="templates")
+plantillas = Jinja2Templates(directory=os.path.join(DIRECTORIO_APP, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def inicio(peticion: Request):
     lista_archivos = os.listdir(CARPETA_SUBIDAS)
-    return plantillas.TemplateResponse("index.html", {
-        "request": peticion,
-        "archivos": lista_archivos
-    })
+    return plantillas.TemplateResponse(
+        request=peticion,
+        name="index.html",
+        context={"archivos": lista_archivos}
+    )
 
 @app.post("/upload")
 async def cargar_archivo(fichero: UploadFile = File(...)):
